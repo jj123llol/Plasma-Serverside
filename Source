@@ -1,0 +1,63 @@
+local mod = {}
+
+function mod.Plasma(plr)
+	local load_failed, errormsg = pcall(function()
+		-- vars n stuff
+		local plrs = game:GetService("Players")
+		local lp = plrs:FindFirstChild(plr)
+		local text_chat = game:GetService("TextChatService")
+		if not lp then
+			print("failed to find plr "..plr)
+			return
+		end
+		plr = nil
+		local gui = lp.PlayerGui
+		-- funcs
+		local function getChar(plr)
+			plr = plrs:FindFirstChild(plr) or lp
+			return plr.Character or plr.CharacterAdded:Wait()
+		end
+		local function getHum(plr)
+			plr = plrs:FindFirstChild(plr) or lp
+			local char, hum = getChar(plr), nil
+			repeat task.wait()
+				hum = char:FindFirstChildOfClass("Humanoid")
+			until hum
+			return hum
+		end
+		-- setting up Plasma
+		Plasma_Admin = {
+			["Commands"] = {}
+		}
+		local function AddCmd(names, cmdlist, description, func)
+			Plasma_Admin["Commands"][names] = {
+				["cmdlist"] = cmdlist,
+				["desc"] = description,
+				["func"] = func
+			}
+		end
+		if text_chat:FindFirstChild("TextChannels") then
+			text_chat.SendingMessage:Connect(function(prompt)
+				local speaker = prompt.TextSource
+				if speaker ~= lp then return end
+				local msg = prompt.Text
+				if string.sub(msg, 1, 1) ~= ">" then return end
+				local split = msg:split(" ")
+				local cmd = split[1]
+				table.remove(split, 1)
+				local args = split
+				print(cmd)
+			end)
+		else
+			error("New chat service not found")
+		end
+	end)
+	if load_failed then
+		print("Failed to load Plasma Serverside")
+		print("Error: "..errormsg)
+	else
+		print("Loaded Plasma Serverside")
+	end
+end
+
+return mod
