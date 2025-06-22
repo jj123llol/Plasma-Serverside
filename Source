@@ -27,30 +27,52 @@ function mod.Plasma(plr)
 		end
 		-- setting up Plasma
 		Plasma_Admin = {
-			["Commands"] = {}
+			["Commands"] = {},
+			["whitelisted"] = {}
 		}
-		local function AddCmd(names, cmdlist, description, func)
+		local function whitelist(plr, level)
+			Plasma_Admin["whitelisted"][plr] = level
+		end
+		whitelist(lp, 4)
+		local function AddCmd(names, cmdlist, description, func, lvl)
 			Plasma_Admin["Commands"][names] = {
 				["cmdlist"] = cmdlist,
 				["desc"] = description,
-				["func"] = func
+				["func"] = func,
+				["level"] = lvl
 			}
+		end
+		local function Runcmd(runner, cmd, args)
+			for names, data in pairs(Plasma_Admin["Commands"]) do
+				for _,name in pairs(names:split("|")) do
+					if name == cmd then
+						if data["level"] > Plasma_Admin["whitelisted"][runner] then return end
+						data["func"](runner, table.unpack(args))
+					end
+				end
+			end
 		end
 		if text_chat:FindFirstChild("TextChannels") then
 			text_chat.SendingMessage:Connect(function(prompt)
 				local speaker = prompt.TextSource
-				if speaker ~= lp then return end
+				if not table.find(Plasma_Admin["whitelisted"], speaker) then return end
 				local msg = prompt.Text
 				if string.sub(msg, 1, 1) ~= ">" then return end
 				local split = msg:split(" ")
 				local cmd = split[1]
 				table.remove(split, 1)
 				local args = split
-				print(cmd)
+				Runcmd(speaker, cmd, args)
 			end)
 		else
 			error("New chat service not found")
 		end
+		
+		-- add cmds
+		
+		AddCmd("kill", "kill (plr)", "kills plr", function(runner, target)
+			print(target)
+		end, 1)
 	end)
 	if load_failed then
 		print("Failed to load Plasma Serverside")
