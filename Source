@@ -1,7 +1,7 @@
 local mod = {}
 
 function mod.Plasma(plr)
-	local load_failed, errormsg = pcall(function()
+	local load_passed, errormsg = pcall(function()
 		-- vars n stuff
 		local plrs = game:GetService("Players")
 		local lp = plrs:FindFirstChild(plr)
@@ -46,7 +46,9 @@ function mod.Plasma(plr)
 			for names, data in pairs(Plasma_Admin["Commands"]) do
 				for _,name in pairs(names:split("|")) do
 					if name == cmd then
+					print("cmd found")
 						if data["level"] > Plasma_Admin["whitelisted"][runner] then return end
+						print("running cmd")
 						data["func"](runner, table.unpack(args))
 					end
 				end
@@ -55,9 +57,12 @@ function mod.Plasma(plr)
 		if text_chat:FindFirstChild("TextChannels") then
 			text_chat.SendingMessage:Connect(function(prompt)
 				local speaker = prompt.TextSource
+				print(table.find(Plasma_Admin["whitelisted"], speaker))
 				if not table.find(Plasma_Admin["whitelisted"], speaker) then return end
+				print("speaker whitelisted")
 				local msg = prompt.Text
 				if string.sub(msg, 1, 1) ~= ">" then return end
+				print("prefix found")
 				local split = msg:split(" ")
 				local cmd = split[1]
 				table.remove(split, 1)
@@ -74,7 +79,7 @@ function mod.Plasma(plr)
 			print(target)
 		end, 1)
 	end)
-	if load_failed then
+	if not load_passed then
 		print("Failed to load Plasma Serverside")
 		print("Error: "..errormsg)
 	else
